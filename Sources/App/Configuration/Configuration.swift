@@ -1,27 +1,41 @@
+
 import Foundation
 import Vapor
 
 enum Configuration {
     static func loadEnvironment() {
         // Try to load from environment variable first
-        if let existingKey = Environment.get("OPENWEATHER_API_KEY") {
-            return
+        if Environment.get("OPENWEATHER_API_KEY") != nil {
+            print("✅ Found OpenWeather API Key in environment")
+        }
+        
+        // Log rate limit configuration
+        if let maxRequests = Environment.get("RATE_LIMIT_MAX_REQUESTS") {
+            print("✅ Rate limit max requests: \(maxRequests)")
+        } else {
+            print("⚠️ Using default rate limit max requests")
+        }
+        
+        if let windowMinutes = Environment.get("RATE_LIMIT_WINDOW_MINUTES") {
+            print("✅ Rate limit window minutes: \(windowMinutes)")
+        } else {
+            print("⚠️ Using default rate limit window")
         }
         
         // If not found, try to load from .env file
-        let workingDirectory = DirectoryConfiguration.detect().workingDirectory
-        let envPath = workingDirectory + ".env"
-        
-        if FileManager.default.fileExists(atPath: envPath) {
-            do {
-                let envContents = try String(contentsOfFile: envPath, encoding: .utf8)
-                let envVars = parse(envFile: envContents)
-                if let apiKey = envVars["OPENWEATHER_API_KEY"] {
-                    setenv("OPENWEATHER_API_KEY", apiKey, 1)
-                }
-            } catch {
-                print("Warning: Could not load .env file")
+        let envPath = DirectoryConfiguration.detect().workingDirectory + ".env"
+        do {
+            let envContents = try String(contentsOfFile: envPath, encoding: .utf8)
+            print("✅ Found .env file with contents:")
+            print(envContents)
+            
+            // Parse and set environment variables
+            let envVars = parse(envFile: envContents)
+            for (key, value) in envVars {
+                setenv(key, value, 1)
             }
+        } catch {
+            print("⚠️ Could not load .env file: \(error)")
         }
         
         #if DEBUG
