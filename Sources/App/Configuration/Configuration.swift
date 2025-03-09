@@ -1,4 +1,3 @@
-
 import Foundation
 import Vapor
 
@@ -26,8 +25,7 @@ enum Configuration {
         let envPath = DirectoryConfiguration.detect().workingDirectory + ".env"
         do {
             let envContents = try String(contentsOfFile: envPath, encoding: .utf8)
-            print("✅ Found .env file with contents:")
-            print(envContents)
+            print("✅ Found .env file")
             
             // Parse and set environment variables
             let envVars = parse(envFile: envContents)
@@ -41,8 +39,9 @@ enum Configuration {
         #if DEBUG
         // Fallback for development only
         if Environment.get("OPENWEATHER_API_KEY") == nil {
-            setenv("OPENWEATHER_API_KEY", "ed05c6ebd3140ff1e3e666a7c664ff75", 1)
-            print("Warning: Using default API key. Set OPENWEATHER_API_KEY in environment or .env file")
+            print("❌ Error: OpenWeather API key not found")
+            print("Please set OPENWEATHER_API_KEY in environment or .env file")
+            fatalError("Missing required environment variable: OPENWEATHER_API_KEY")
         }
         #endif
     }
